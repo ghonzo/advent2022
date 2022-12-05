@@ -4,5 +4,3 @@ go 1.19
 
 // For generics constraints
 require golang.org/x/exp v0.0.0-20221126150942-6ab00d035af9
-
-require github.com/gammazero/deque v0.2.1
