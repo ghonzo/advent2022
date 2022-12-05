@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gammazero/deque"
 	"github.com/ghonzo/advent2022/common"
 )
 
@@ -20,79 +19,59 @@ func main() {
 	fmt.Printf("Part 2: %s\n", part2(entries))
 }
 
+var leftSquareBracketRegex = regexp.MustCompile(`\[`)
 var instructionRegex = regexp.MustCompile(`move (\d+) from (\d+) to (\d+)`)
 
 func part1(entries []string) string {
-	stacks := make([]*deque.Deque[byte], 9)
-	stacks[0] = makeStack("WBDNCFJ")
-	stacks[1] = makeStack("PZVQLST")
-	stacks[2] = makeStack("PZBGJT")
-	stacks[3] = makeStack("DTLJZBHC")
-	stacks[4] = makeStack("GVBJS")
-	stacks[5] = makeStack("PSQ")
-	stacks[6] = makeStack("BVDFLMPN")
-	stacks[7] = makeStack("PSMFBDLR")
-	stacks[8] = makeStack("VDTR")
-	for _, s := range entries {
-		if len(s) == 0 || s[0] != 'm' {
-			continue
-		}
-		group := instructionRegex.FindStringSubmatch(s)
+	stack, blankLineNum := readStacks(entries)
+	for _, str := range entries[blankLineNum+1:] {
+		group := instructionRegex.FindStringSubmatch(str)
 		n := common.Atoi(group[1])
 		src := common.Atoi(group[2]) - 1
 		dest := common.Atoi(group[3]) - 1
-		for i := 0; i < n; i++ {
-			b := stacks[src].PopBack()
-			stacks[dest].PushBack(b)
-		}
+		crates := stack[src][:n]
+		stack[src] = stack[src][n:]
+		stack[dest] = common.Reverse(crates) + stack[dest]
 	}
 	var sb strings.Builder
-	for _, stack := range stacks {
-		sb.WriteByte(stack.Back())
+	for _, s := range stack {
+		sb.WriteByte(s[0])
 	}
 	return sb.String()
 }
 
-func makeStack(s string) *deque.Deque[byte] {
-	stack := deque.New[byte]()
-	for _, r := range s {
-		stack.PushBack(byte(r))
+func readStacks(entries []string) ([]string, int) {
+	stack := make([]string, 9)
+	for lineNum, s := range entries {
+		indexes := leftSquareBracketRegex.FindAllStringIndex(s, -1)
+		if indexes == nil {
+			s = strings.TrimSpace(s)
+			numStacks := common.Atoi(s[len(s)-1:])
+			return stack[:numStacks], lineNum + 1
+		}
+		for _, m := range indexes {
+			// m is an []int with the first element being the index of the left square bracket
+			pos := m[0]
+			stack[pos/4] = stack[pos/4] + string(s[pos+1])
+		}
 	}
-	return stack
+	panic("oops")
 }
 
 func part2(entries []string) string {
-	stacks := make([]*deque.Deque[byte], 9)
-	stacks[0] = makeStack("WBDNCFJ")
-	stacks[1] = makeStack("PZVQLST")
-	stacks[2] = makeStack("PZBGJT")
-	stacks[3] = makeStack("DTLJZBHC")
-	stacks[4] = makeStack("GVBJS")
-	stacks[5] = makeStack("PSQ")
-	stacks[6] = makeStack("BVDFLMPN")
-	stacks[7] = makeStack("PSMFBDLR")
-	stacks[8] = makeStack("VDTR")
-	for _, s := range entries {
-		if len(s) == 0 || s[0] != 'm' {
-			continue
-		}
-		group := instructionRegex.FindStringSubmatch(s)
+	stack, blankLineNum := readStacks(entries)
+	for _, str := range entries[blankLineNum+1:] {
+		group := instructionRegex.FindStringSubmatch(str)
 		n := common.Atoi(group[1])
 		src := common.Atoi(group[2]) - 1
 		dest := common.Atoi(group[3]) - 1
-		tempStack := deque.New[byte]()
-		for i := 0; i < n; i++ {
-			b := stacks[src].PopBack()
-			tempStack.PushBack(b)
-		}
-		for i := 0; i < n; i++ {
-			b := tempStack.PopBack()
-			stacks[dest].PushBack(b)
-		}
+		crates := stack[src][:n]
+		stack[src] = stack[src][n:]
+		stack[dest] = crates + stack[dest]
 	}
 	var sb strings.Builder
-	for _, stack := range stacks {
-		sb.WriteByte(stack.Back())
+	for _, s := range stack {
+		sb.WriteByte(s[0])
 	}
 	return sb.String()
 }
