@@ -73,3 +73,27 @@ func TestSgn(t *testing.T) {
 		})
 	}
 }
+
+func TestReverse(t *testing.T) {
+	type args struct {
+		s string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"empty", args{""}, ""},
+		{"one char", args{"A"}, "A"},
+		{"two char", args{"AB"}, "BA"},
+		{"three char", args{"ABC"}, "CBA"},
+		{"four char", args{"ABCD"}, "DCBA"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := Reverse(tt.args.s); got != tt.want {
+				t.Errorf("Reverse() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
