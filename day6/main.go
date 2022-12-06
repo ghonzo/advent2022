@@ -12,33 +12,31 @@ import (
 // Part 2 answer: 3380
 func main() {
 	fmt.Println("Advent of Code 2022, Day 6")
-	entries := common.ReadStringsFromFile("input.txt")
-	fmt.Printf("Part 1: %d\n", part1(entries))
-	fmt.Printf("Part 2: %d\n", part2(entries))
+	str := common.ReadStringsFromFile("input.txt")[0]
+	fmt.Printf("Part 1: %d\n", part1(str))
+	fmt.Printf("Part 2: %d\n", part2(str))
 }
 
-func part1(entries []string) int {
-	str := entries[0]
+func part1(str string) int {
 	for i := 4; i < len(str); i++ {
-		cMap := make(map[rune]bool)
+		rMap := make(map[rune]bool)
 		for _, r := range str[i-4 : i] {
-			cMap[r] = true
+			rMap[r] = true
 		}
-		if len(cMap) == 4 {
+		if len(rMap) == 4 {
 			return i
 		}
 	}
 	return -1
 }
 
-func part2(entries []string) int {
-	str := entries[0]
+func part2(str string) int {
 	for i := 14; i < len(str); i++ {
-		cMap := make(map[rune]bool)
+		rMap := make(map[rune]bool)
 		for _, r := range str[i-14 : i] {
-			cMap[r] = true
+			rMap[r] = true
 		}
-		if len(cMap) == 14 {
+		if len(rMap) == 14 {
 			return i
 		}
 	}
