@@ -83,64 +83,30 @@ func (f *file) Parent() *dir {
 }
 
 func part1(entries []string) int {
-	root := new(dir)
-	cwd := root
-	for _, s := range entries {
-		if strings.HasPrefix(s, "$ cd ") {
-			childDir := strings.TrimPrefix(s, "$ cd ")
-			if childDir == "/" {
-				cwd = root
-			} else if childDir == ".." {
-				cwd = cwd.Parent()
-			} else {
-				cwd = cwd.Cd(childDir)
-			}
-		} else if s != "$ ls" {
-			// Must be in the middle of a directory listing
-			if strings.HasPrefix(s, "dir ") {
-				cwd.children = append(cwd.children, &dir{name: strings.TrimPrefix(s, "dir "), parent: cwd})
-			} else {
-				size, n, ok := strings.Cut(s, " ")
-				if !ok {
-					panic("oops")
-				}
-				cwd.children = append(cwd.children, &file{name: n, size: common.Atoi(size), parent: cwd})
-			}
-		} else {
-			// Must be ls ... panic if already have children
-			if len(cwd.children) > 0 {
-				panic("already have children")
-			}
+	root := constructFileSystem(entries)
+	dirSizes := make(map[*dir]int)
+	addDirSizes(root, dirSizes)
+	var sum int
+	for _, v := range dirSizes {
+		if v <= 100000 {
+			sum += v
 		}
 	}
-	sum := 0
-	sumOfSmall(root, &sum)
 	return sum
 }
 
-func sumOfSmall(x fd, sum *int) {
-	if _, ok := x.(*dir); ok {
-		if x.Size() <= 100000 {
-			*sum += x.Size()
-		}
-		for _, sub := range x.Children() {
-			sumOfSmall(sub, sum)
-		}
-	}
-}
-
-func part2(entries []string) int {
+func constructFileSystem(entries []string) *dir {
 	root := new(dir)
 	cwd := root
 	for _, s := range entries {
 		if strings.HasPrefix(s, "$ cd ") {
-			childDir := strings.TrimPrefix(s, "$ cd ")
-			if childDir == "/" {
+			d := strings.TrimPrefix(s, "$ cd ")
+			if d == "/" {
 				cwd = root
-			} else if childDir == ".." {
+			} else if d == ".." {
 				cwd = cwd.Parent()
 			} else {
-				cwd = cwd.Cd(childDir)
+				cwd = cwd.Cd(d)
 			}
 		} else if s != "$ ls" {
 			// Must be in the middle of a directory listing
@@ -153,24 +119,9 @@ func part2(entries []string) int {
 				}
 				cwd.children = append(cwd.children, &file{name: n, size: common.Atoi(size), parent: cwd})
 			}
-		} else {
-			// Must be ls ... panic if already have children
-			if len(cwd.children) > 0 {
-				panic("already have children")
-			}
 		}
 	}
-	unused := 70000000 - root.Size()
-	need := 30000000 - unused
-	dirSizes := make(map[*dir]int)
-	addDirSizes(root, dirSizes)
-	smallest := unused
-	for _, v := range dirSizes {
-		if v >= need && v < smallest {
-			smallest = v
-		}
-	}
-	return smallest
+	return root
 }
 
 func addDirSizes(d *dir, sizeMap map[*dir]int) {
@@ -180,4 +131,19 @@ func addDirSizes(d *dir, sizeMap map[*dir]int) {
 			addDirSizes(sub, sizeMap)
 		}
 	}
+}
+
+func part2(entries []string) int {
+	root := constructFileSystem(entries)
+	unused := 70000000 - root.Size()
+	need := 30000000 - unused
+	dirSizes := make(map[*dir]int)
+	addDirSizes(root, dirSizes)
+	smallest := 70000000
+	for _, v := range dirSizes {
+		if v >= need && v < smallest {
+			smallest = v
+		}
+	}
+	return smallest
 }
