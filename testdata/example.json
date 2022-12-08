@@ -1,0 +1,444 @@
+{
+    "members": {
+        "15676": {
+            "id": 15676,
+            "stars": 10,
+            "name": "Tony Tiger",
+            "completion_day_level": {
+                "3": {
+                    "2": {
+                        "get_star_ts": 1670045254,
+                        "star_index": 591590
+                    },
+                    "1": {
+                        "star_index": 586137,
+                        "get_star_ts": 1670044749
+                    }
+                },
+                "5": {
+                    "1": {
+                        "get_star_ts": 1670257435,
+                        "star_index": 1314266
+                    },
+                    "2": {
+                        "get_star_ts": 1670270666,
+                        "star_index": 1364325
+                    }
+                },
+                "1": {
+                    "1": {
+                        "get_star_ts": 1669932199,
+                        "star_index": 226180
+                    },
+                    "2": {
+                        "star_index": 230211,
+                        "get_star_ts": 1669933586
+                    }
+                },
+                "2": {
+                    "2": {
+                        "get_star_ts": 1670020132,
+                        "star_index": 543294
+                    },
+                    "1": {
+                        "get_star_ts": 1670019446,
+                        "star_index": 541515
+                    }
+                },
+                "4": {
+                    "2": {
+                        "star_index": 1114161,
+                        "get_star_ts": 1670198764
+                    },
+                    "1": {
+                        "star_index": 1113829,
+                        "get_star_ts": 1670198542
+                    }
+                }
+            },
+            "global_score": 0,
+            "last_star_ts": 1670270666,
+            "local_score": 67
+        },
+        "4020": {
+            "completion_day_level": {
+                "4": {
+                    "2": {
+                        "get_star_ts": 1670130646,
+                        "star_index": 852901
+                    },
+                    "1": {
+                        "star_index": 847805,
+                        "get_star_ts": 1670130376
+                    }
+                },
+                "2": {
+                    "1": {
+                        "get_star_ts": 1669957682,
+                        "star_index": 267537
+                    },
+                    "2": {
+                        "star_index": 269617,
+                        "get_star_ts": 1669957827
+                    }
+                },
+                "1": {
+                    "1": {
+                        "star_index": 0,
+                        "get_star_ts": 1669871009
+                    },
+                    "2": {
+                        "get_star_ts": 1669871223,
+                        "star_index": 4248
+                    }
+                },
+                "5": {
+                    "2": {
+                        "get_star_ts": 1670218112,
+                        "star_index": 1145609
+                    },
+                    "1": {
+                        "get_star_ts": 1670217877,
+                        "star_index": 1143377
+                    }
+                },
+                "3": {
+                    "1": {
+                        "star_index": 580748,
+                        "get_star_ts": 1670044335
+                    },
+                    "2": {
+                        "star_index": 584853,
+                        "get_star_ts": 1670044643
+                    }
+                }
+            },
+            "global_score": 0,
+            "last_star_ts": 1670218112,
+            "local_score": 114,
+            "name": "Bonzo",
+            "stars": 10,
+            "id": 4020
+        },
+        "107985": {
+            "last_star_ts": 1670217303,
+            "local_score": 107,
+            "global_score": 0,
+            "completion_day_level": {
+                "5": {
+                    "1": {
+                        "star_index": 1137695,
+                        "get_star_ts": 1670217213
+                    },
+                    "2": {
+                        "star_index": 1138325,
+                        "get_star_ts": 1670217303
+                    }
+                },
+                "3": {
+                    "2": {
+                        "get_star_ts": 1670044450,
+                        "star_index": 582293
+                    },
+                    "1": {
+                        "star_index": 577219,
+                        "get_star_ts": 1670044058
+                    }
+                },
+                "1": {
+                    "1": {
+                        "star_index": 157052,
+                        "get_star_ts": 1669911676
+                    },
+                    "2": {
+                        "star_index": 157366,
+                        "get_star_ts": 1669911758
+                    }
+                },
+                "2": {
+                    "2": {
+                        "star_index": 269894,
+                        "get_star_ts": 1669957844
+                    },
+                    "1": {
+                        "star_index": 266776,
+                        "get_star_ts": 1669957620
+                    }
+                },
+                "4": {
+                    "2": {
+                        "star_index": 855451,
+                        "get_star_ts": 1670130796
+                    },
+                    "1": {
+                        "get_star_ts": 1670130596,
+                        "star_index": 851993
+                    }
+                }
+            },
+            "stars": 10,
+            "name": "Buddy The Elf",
+            "id": 107985
+        },
+        "3032621": {
+            "stars": 10,
+            "id": 3032621,
+            "name": "Bender",
+            "completion_day_level": {
+                "2": {
+                    "2": {
+                        "star_index": 436796,
+                        "get_star_ts": 1669990039
+                    },
+                    "1": {
+                        "get_star_ts": 1669989280,
+                        "star_index": 433609
+                    }
+                },
+                "4": {
+                    "2": {
+                        "star_index": 940576,
+                        "get_star_ts": 1670149460
+                    },
+                    "1": {
+                        "get_star_ts": 1670149290,
+                        "star_index": 939686
+                    }
+                },
+                "3": {
+                    "2": {
+                        "get_star_ts": 1670080069,
+                        "star_index": 728808
+                    },
+                    "1": {
+                        "get_star_ts": 1670078100,
+                        "star_index": 721664
+                    }
+                },
+                "5": {
+                    "1": {
+                        "star_index": 1346144,
+                        "get_star_ts": 1670265890
+                    },
+                    "2": {
+                        "get_star_ts": 1670265975,
+                        "star_index": 1346468
+                    }
+                },
+                "1": {
+                    "1": {
+                        "get_star_ts": 1669910271,
+                        "star_index": 152044
+                    },
+                    "2": {
+                        "star_index": 153078,
+                        "get_star_ts": 1669910548
+                    }
+                }
+            },
+            "global_score": 0,
+            "last_star_ts": 1670265975,
+            "local_score": 73
+        },
+        "36258": {
+            "completion_day_level": {
+                "1": {
+                    "1": {
+                        "star_index": 13484,
+                        "get_star_ts": 1669872090
+                    },
+                    "2": {
+                        "star_index": 14287,
+                        "get_star_ts": 1669872213
+                    }
+                },
+                "5": {
+                    "1": {
+                        "get_star_ts": 1670223711,
+                        "star_index": 1175832
+                    },
+                    "2": {
+                        "get_star_ts": 1670225847,
+                        "star_index": 1183929
+                    }
+                },
+                "3": {
+                    "1": {
+                        "star_index": 748397,
+                        "get_star_ts": 1670085715
+                    },
+                    "2": {
+                        "star_index": 758969,
+                        "get_star_ts": 1670088808
+                    }
+                },
+                "4": {
+                    "2": {
+                        "star_index": 876906,
+                        "get_star_ts": 1670133452
+                    },
+                    "1": {
+                        "get_star_ts": 1670131445,
+                        "star_index": 863780
+                    }
+                },
+                "2": {
+                    "2": {
+                        "star_index": 298217,
+                        "get_star_ts": 1669960712
+                    },
+                    "1": {
+                        "star_index": 289350,
+                        "get_star_ts": 1669959373
+                    }
+                }
+            },
+            "last_star_ts": 1670225847,
+            "local_score": 84,
+            "global_score": 0,
+            "name": "Mouse",
+            "stars": 10,
+            "id": 36258
+        },
+        "91634": {
+            "stars": 0,
+            "id": 91634,
+            "name": "Suzie Money",
+            "completion_day_level": {},
+            "last_star_ts": 0,
+            "global_score": 0,
+            "local_score": 0
+        },
+        "9667834": {
+            "stars": 0,
+            "name": "Ben Dover",
+            "id": 9667834,
+            "completion_day_level": {},
+            "local_score": 0,
+            "last_star_ts": 0,
+            "global_score": 0
+        },
+        "255161": {
+            "completion_day_level": {
+                "3": {
+                    "1": {
+                        "star_index": 592598,
+                        "get_star_ts": 1670045362
+                    },
+                    "2": {
+                        "star_index": 603179,
+                        "get_star_ts": 1670046946
+                    }
+                },
+                "5": {
+                    "2": {
+                        "star_index": 1165466,
+                        "get_star_ts": 1670221160
+                    },
+                    "1": {
+                        "get_star_ts": 1670220293,
+                        "star_index": 1160983
+                    }
+                },
+                "1": {
+                    "1": {
+                        "star_index": 26054,
+                        "get_star_ts": 1669875294
+                    },
+                    "2": {
+                        "get_star_ts": 1669875504,
+                        "star_index": 26708
+                    }
+                },
+                "2": {
+                    "1": {
+                        "star_index": 288991,
+                        "get_star_ts": 1669959330
+                    },
+                    "2": {
+                        "star_index": 292037,
+                        "get_star_ts": 1669959720
+                    }
+                },
+                "4": {
+                    "2": {
+                        "star_index": 1074208,
+                        "get_star_ts": 1670183930
+                    },
+                    "1": {
+                        "get_star_ts": 1670183061,
+                        "star_index": 1071354
+                    }
+                }
+            },
+            "global_score": 0,
+            "last_star_ts": 1670221160,
+            "local_score": 86,
+            "stars": 10,
+            "name": "kenny",
+            "id": 255161
+        },
+        "9916607": {
+            "completion_day_level": {
+                "1": {
+                    "1": {
+                        "star_index": 2036,
+                        "get_star_ts": 1669871107
+                    },
+                    "2": {
+                        "star_index": 7115,
+                        "get_star_ts": 1669871409
+                    }
+                },
+                "3": {
+                    "2": {
+                        "star_index": 585658,
+                        "get_star_ts": 1670044707
+                    },
+                    "1": {
+                        "get_star_ts": 1670044274,
+                        "star_index": 579930
+                    }
+                },
+                "5": {
+                    "1": {
+                        "get_star_ts": 1670246368,
+                        "star_index": 1269704
+                    },
+                    "2": {
+                        "star_index": 1270500,
+                        "get_star_ts": 1670246574
+                    }
+                },
+                "4": {
+                    "2": {
+                        "get_star_ts": 1670130878,
+                        "star_index": 856763
+                    },
+                    "1": {
+                        "star_index": 855862,
+                        "get_star_ts": 1670130822
+                    }
+                },
+                "2": {
+                    "2": {
+                        "star_index": 274648,
+                        "get_star_ts": 1669958133
+                    },
+                    "1": {
+                        "star_index": 270440,
+                        "get_star_ts": 1669957878
+                    }
+                }
+            },
+            "last_star_ts": 1670246574,
+            "local_score": 99,
+            "global_score": 0,
+            "id": 9916607,
+            "stars": 10,
+            "name": "Stephen Peach"
+        }
+    },
+    "event": "2022",
+    "owner_id": 4020
+}
