@@ -49,14 +49,8 @@ func resolveDir(b byte) common.Point {
 func updateTail(head, tail common.Point) common.Point {
 	dx := head.X() - tail.X()
 	dy := head.Y() - tail.Y()
-	if common.Abs(dx) == 2 {
-		if common.Abs(dy) == 2 {
-			return tail.Add(common.NewPoint(dx/2, dy/2))
-		}
-		return tail.Add(common.NewPoint(dx/2, dy))
-	}
-	if common.Abs(dy) == 2 {
-		return tail.Add(common.NewPoint(dx, dy/2))
+	if common.Abs(dx) == 2 || common.Abs(dy) == 2 {
+		return tail.Add(common.NewPoint(common.Sgn(dx), common.Sgn(dy)))
 	}
 	return tail
 }
