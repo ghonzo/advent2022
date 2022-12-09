@@ -26,8 +26,8 @@ type stars struct {
 func main() {
 	var endpoint, session string
 	var day int
-	flag.StringVar(&endpoint, "endpoint", os.Getenv("LEADERBOARD_URL"), "URL of the leaderboard JSON endpoint")
-	flag.StringVar(&session, "session", os.Getenv("LEADERBOARD_SESSION"), "session cookie value")
+	flag.StringVar(&endpoint, "endpoint", os.Getenv("LEADERBOARD_URL"), "URL of the leaderboard JSON endpoint. Can also set the LEADERBOARD_URL env variable.")
+	flag.StringVar(&session, "session", os.Getenv("LEADERBOARD_SESSION"), "session cookie value. Can also set the LEADERBOARD_SESSION env variable.")
 	flag.IntVar(&day, "day", 0, "day to display, or most recent if not provided")
 	flag.Parse()
 	if len(endpoint) == 0 {
