@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/ghonzo/advent2022/common"
+	"github.com/oleiade/lane/v2"
 )
 
 // Day 12: Hill Climbing Algorithm
@@ -17,33 +18,26 @@ func main() {
 	fmt.Printf("Part 2: %d\n", part2(entries))
 }
 
-type globalState struct {
-	grid           common.Grid
-	minStepByPoint map[common.Point]int
-	minSolution    int
-	// Is the given point the end of the road?
-	completeFn  func(common.Point) bool
-	validMoveFn func(fromElevation, toElevation byte) bool
-}
-
 func part1(entries []string) int {
 	g, start, end := readGrid(entries)
-	gs := &globalState{
-		grid:           g,
-		minStepByPoint: make(map[common.Point]int),
-		minSolution:    999999,
-		completeFn: func(pt common.Point) bool {
-			return pt == end
-		},
-		validMoveFn: func(fromElevation, toElevation byte) bool {
-			return toElevation <= fromElevation+1
-		}}
-	return findShortestPath(start, 0, gs)
+	return findShortestPath(start, g, func(pt common.Point) bool {
+		return pt == end
+	}, func(fromElevation, toElevation byte) bool {
+		return toElevation <= fromElevation+1
+	})
 }
 
-func readGrid(entries []string) (common.Grid, common.Point, common.Point) {
-	g := common.ArraysGridFromLines(entries)
-	var start, end common.Point
+func part2(entries []string) int {
+	g, _, end := readGrid(entries)
+	return findShortestPath(end, g, func(pt common.Point) bool {
+		return g.Get(pt) == 'a'
+	}, func(fromElevation, toElevation byte) bool {
+		return toElevation >= fromElevation-1
+	})
+}
+
+func readGrid(entries []string) (g common.Grid, start common.Point, end common.Point) {
+	g = common.ArraysGridFromLines(entries)
 	for p := range g.AllPoints() {
 		v := g.Get(p)
 		if v == 'S' {
@@ -54,45 +48,38 @@ func readGrid(entries []string) (common.Grid, common.Point, common.Point) {
 			g.Set(p, 'z')
 		}
 	}
-	return g, start, end
+	return
 }
 
-func findShortestPath(pos common.Point, step int, gs *globalState) int {
-	if gs.completeFn(pos) {
-		return step
-	}
-	// Bad path
-	if step >= gs.minSolution {
-		return gs.minSolution
-	}
-	if min, ok := gs.minStepByPoint[pos]; !ok || step < min {
-		gs.minStepByPoint[pos] = step
-	} else {
-		return gs.minSolution
-	}
-	mm := new(common.MaxMin[int])
-	mm.Accept(gs.minSolution)
-	currentElevation := gs.grid.Get(pos)
-	for np := range pos.SurroundingCardinals() {
-		if v, ok := gs.grid.CheckedGet(np); ok && gs.validMoveFn(currentElevation, v) {
-			// We can explore this path
-			mm.Accept(findShortestPath(np, step+1, gs))
+func findShortestPath(start common.Point, grid common.Grid, completeFn func(common.Point) bool, validMoveFn func(fromElevation, toElevation byte) bool) int {
+	// stores the minimum steps of all visited points
+	minSteps := make(map[common.Point]int)
+	// When you think shortest path finding, think Dijkstra's algorithm
+	// (https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm). Use a generic priority queue
+	// I found on the Internets. The priority is the number of steps.
+	pq := lane.NewMinPriorityQueue[common.Point, int]()
+	pq.Push(start, 0)
+	for !pq.Empty() {
+		pos, steps, _ := pq.Pop()
+		// Did we complete?
+		if completeFn(pos) {
+			return steps
+		}
+		// Have we been here before?
+		if min, ok := minSteps[pos]; ok && steps >= min {
+			// Yep, so forget this path
+			continue
+		}
+		// Remember we've been here
+		minSteps[pos] = steps
+		currentElevation := grid.Get(pos)
+		// Test each direction
+		for np := range pos.SurroundingCardinals() {
+			if v, ok := grid.CheckedGet(np); ok && validMoveFn(currentElevation, v) {
+				// Explore this path
+				pq.Push(np, steps+1)
+			}
 		}
 	}
-	return mm.Min
-}
-
-func part2(entries []string) int {
-	g, _, end := readGrid(entries)
-	gs := &globalState{
-		grid:           g,
-		minStepByPoint: make(map[common.Point]int),
-		minSolution:    999999,
-		completeFn: func(pt common.Point) bool {
-			return g.Get(pt) == 'a'
-		},
-		validMoveFn: func(fromElevation, toElevation byte) bool {
-			return toElevation >= fromElevation-1
-		}}
-	return findShortestPath(end, 0, gs)
+	panic("Well crap")
 }
