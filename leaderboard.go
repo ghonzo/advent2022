@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -11,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ghonzo/advent2022/common"
+	"github.com/tidwall/gjson"
 )
 
 type member struct {
@@ -83,26 +82,22 @@ func callFileEndpoint(endpoint string) ([]byte, error) {
 var zeroTime = time.Time{}
 
 func renderResults(body []byte, day int) string {
-	var result map[string]any
 	var members []member
-	json.Unmarshal(body, &result)
-	membersJson := result["members"].(map[string]any)
-	for _, v := range membersJson {
-		attrMap := v.(map[string]any)
-		m := member{name: attrMap["name"].(string)}
+	gjson.GetBytes(body, "members").ForEach(func(key, value gjson.Result) bool {
+		// The key is the string of the member id, the value is the full member JSON
+		m := member{name: value.Get("name").String()}
 		m.day = make(map[int]stars)
-		completionDayLevelMap := attrMap["completion_day_level"].(map[string]any)
-		for dayStr, v2 := range completionDayLevelMap {
-			starsMap := v2.(map[string]any)
-			part1Map := starsMap["1"].(map[string]any)
-			s := stars{part1: time.Unix(int64(part1Map["get_star_ts"].(float64)), 0)}
-			if part2Map, ok := starsMap["2"].(map[string]any); ok {
-				s.part2 = time.Unix(int64(part2Map["get_star_ts"].(float64)), 0)
+		value.Get("completion_day_level").ForEach(func(day, value2 gjson.Result) bool {
+			s := stars{part1: time.Unix(value2.Get("1.get_star_ts").Int(), 0)}
+			if value2.Get("2").Exists() {
+				s.part2 = time.Unix(value2.Get("2.get_star_ts").Int(), 0)
 			}
-			m.day[common.Atoi(dayStr)] = s
-		}
+			m.day[int(day.Int())] = s
+			return true
+		})
 		members = append(members, m)
-	}
+		return true
+	})
 	// Figure out the day. If zero, then the maximum day
 	if day == 0 {
 		for _, m := range members {
