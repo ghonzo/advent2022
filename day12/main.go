@@ -17,12 +17,31 @@ func main() {
 	fmt.Printf("Part 2: %d\n", part2(entries))
 }
 
-type gamestate struct {
-	pos   common.Point
-	steps int
+type globalState struct {
+	grid           common.Grid
+	minStepByPoint map[common.Point]int
+	minSolution    int
+	// Is the given point the end of the road?
+	completeFn  func(common.Point) bool
+	validMoveFn func(fromElevation, toElevation byte) bool
 }
 
 func part1(entries []string) int {
+	g, start, end := readGrid(entries)
+	gs := &globalState{
+		grid:           g,
+		minStepByPoint: make(map[common.Point]int),
+		minSolution:    999999,
+		completeFn: func(pt common.Point) bool {
+			return pt == end
+		},
+		validMoveFn: func(fromElevation, toElevation byte) bool {
+			return toElevation <= fromElevation+1
+		}}
+	return findShortestPath(start, 0, gs)
+}
+
+func readGrid(entries []string) (common.Grid, common.Point, common.Point) {
 	g := common.ArraysGridFromLines(entries)
 	var start, end common.Point
 	for p := range g.AllPoints() {
@@ -35,82 +54,45 @@ func part1(entries []string) int {
 			g.Set(p, 'z')
 		}
 	}
-	state := &gamestate{pos: start}
-	return findNextState(state, g, end, 999999)
+	return g, start, end
 }
 
-var dirs = []common.Point{common.U, common.L, common.R, common.D}
-
-var globalMinSteps = make(map[common.Point]int)
-
-func findNextState(state *gamestate, g common.Grid, end common.Point, minSteps int) int {
-	if state.pos == end {
-		return state.steps
+func findShortestPath(pos common.Point, step int, gs *globalState) int {
+	if gs.completeFn(pos) {
+		return step
 	}
 	// Bad path
-	if state.steps >= minSteps {
-		return minSteps
+	if step >= gs.minSolution {
+		return gs.minSolution
 	}
-	if min, ok := globalMinSteps[state.pos]; !ok || state.steps < min {
-		globalMinSteps[state.pos] = state.steps
+	if min, ok := gs.minStepByPoint[pos]; !ok || step < min {
+		gs.minStepByPoint[pos] = step
 	} else {
-		return minSteps
+		return gs.minSolution
 	}
 	mm := new(common.MaxMin[int])
-	mm.Accept(minSteps)
-	currentElevation := g.Get(state.pos)
-	for _, dir := range dirs {
-		np := state.pos.Add(dir)
-		if v, ok := g.CheckedGet(np); ok && v <= currentElevation+1 {
-			// We can move
-			newState := &gamestate{pos: np, steps: state.steps + 1}
-			mm.Accept(findNextState(newState, g, end, mm.Min))
+	mm.Accept(gs.minSolution)
+	currentElevation := gs.grid.Get(pos)
+	for np := range pos.SurroundingCardinals() {
+		if v, ok := gs.grid.CheckedGet(np); ok && gs.validMoveFn(currentElevation, v) {
+			// We can explore this path
+			mm.Accept(findShortestPath(np, step+1, gs))
 		}
 	}
 	return mm.Min
 }
-
-var globalMinStepsDown = make(map[common.Point]int)
 
 func part2(entries []string) int {
-	g := common.ArraysGridFromLines(entries)
-	var end common.Point
-	for p := range g.AllPoints() {
-		v := g.Get(p)
-		if v == 'S' {
-			g.Set(p, 'a')
-		} else if v == 'E' {
-			end = p
-			g.Set(p, 'z')
-		}
-	}
-	state := &gamestate{pos: end}
-	return findNextStateDown(state, g, 999999)
-}
-
-func findNextStateDown(state *gamestate, g common.Grid, minSteps int) int {
-	currentElevation := g.Get(state.pos)
-	if currentElevation == 'a' {
-		return state.steps
-	}
-	// Bad path
-	if state.steps >= minSteps {
-		return minSteps
-	}
-	if min, ok := globalMinStepsDown[state.pos]; !ok || state.steps < min {
-		globalMinStepsDown[state.pos] = state.steps
-	} else {
-		return minSteps
-	}
-	mm := new(common.MaxMin[int])
-	mm.Accept(minSteps)
-	for _, dir := range dirs {
-		np := state.pos.Add(dir)
-		if v, ok := g.CheckedGet(np); ok && v >= currentElevation-1 {
-			// We can move
-			newState := &gamestate{pos: np, steps: state.steps + 1}
-			mm.Accept(findNextStateDown(newState, g, mm.Min))
-		}
-	}
-	return mm.Min
+	g, _, end := readGrid(entries)
+	gs := &globalState{
+		grid:           g,
+		minStepByPoint: make(map[common.Point]int),
+		minSolution:    999999,
+		completeFn: func(pt common.Point) bool {
+			return g.Get(pt) == 'a'
+		},
+		validMoveFn: func(fromElevation, toElevation byte) bool {
+			return toElevation >= fromElevation-1
+		}}
+	return findShortestPath(end, 0, gs)
 }
