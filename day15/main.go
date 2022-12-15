@@ -18,38 +18,36 @@ func main() {
 	fmt.Printf("Part 2: %d\n", part2(entries, 4000000))
 }
 
-var lineRegexp = regexp.MustCompile(`Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)`)
-
 type sensor struct {
 	p common.Point
 	// closest beacon distance
 	cbd int
 }
 
+// If the point cannot be a beacon because it is closer than the cbd, then return true
+func (s *sensor) invalidPoint(p common.Point) bool {
+	return s.p.Sub(p).ManhattanDistance() <= s.cbd
+}
+
 func part1(entries []string, row int) int {
-	sensors := make([]*sensor, len(entries))
-	beaconSet := make(map[common.Point]bool)
+	sensors, beaconSet := parseInput(entries)
+	// We need to find the min and max x-coord and the max cdb so we know what x-range to search
 	mmx := new(common.MaxMin[int])
 	mmcdb := new(common.MaxMin[int])
-	for i, line := range entries {
-		group := lineRegexp.FindStringSubmatch(line)
-		sp := common.NewPoint(common.Atoi(group[1]), common.Atoi(group[2]))
-		bp := common.NewPoint(common.Atoi(group[3]), common.Atoi(group[4]))
-		sensors[i] = &sensor{sp, sp.Sub(bp).ManhattanDistance()}
-		mmx.Accept(sp.X())
-		mmcdb.Accept(sensors[i].cbd)
-		beaconSet[bp] = true
+	for _, s := range sensors {
+		mmx.Accept(s.p.X())
+		mmcdb.Accept(s.cbd)
 	}
-	fmt.Println(mmx, mmcdb)
+	// So how to we restrict our search? Using the min and max x-coords and the max beacon distance.
 	var count int
 	for x := mmx.Min - mmcdb.Max; x < mmx.Max+mmcdb.Max; x++ {
 		p := common.NewPoint(x, row)
+		// Skip if there's a beacon there already
 		if beaconSet[p] {
 			continue
 		}
 		for _, s := range sensors {
-			// Check to see if it's closer than the closest
-			if s.p.Sub(p).ManhattanDistance() <= s.cbd {
+			if s.invalidPoint(p) {
 				count++
 				break
 			}
@@ -58,86 +56,52 @@ func part1(entries []string, row int) int {
 	return count
 }
 
-func part2(entries []string, max int) int {
-	sensors := make([]*sensor, len(entries))
-	beaconSet := make(map[common.Point]bool)
-	// As we are parsing, remember the sensors with the smallest cdb
+var lineRegexp = regexp.MustCompile(`Sensor at x=(-?\d+), y=(-?\d+): closest beacon is at x=(-?\d+), y=(-?\d+)`)
+
+// Parse the input and return all the sensor locations, as well as a set that represents the beacon locations
+func parseInput(entries []string) (sensors []*sensor, beaconSet map[common.Point]bool) {
+	sensors = make([]*sensor, len(entries))
+	beaconSet = make(map[common.Point]bool)
 	for i, line := range entries {
 		group := lineRegexp.FindStringSubmatch(line)
 		sp := common.NewPoint(common.Atoi(group[1]), common.Atoi(group[2]))
 		bp := common.NewPoint(common.Atoi(group[3]), common.Atoi(group[4]))
-		cdb := sp.Sub(bp).ManhattanDistance()
-		sensors[i] = &sensor{sp, cdb}
+		sensors[i] = &sensor{sp, sp.Sub(bp).ManhattanDistance()}
 		beaconSet[bp] = true
 	}
+	return
+}
+
+func part2(entries []string, maxCoord int) int {
+	sensors, beaconSet := parseInput(entries)
+	// How do we restrict our search space? Since there's only going to be one point
+	// in the entire space that is valid, it stands to reason that it will be one space
+	// further away from some sensor's minimum beacon distance. So search the diamond
+	// around each sensor for a point that is not "invalid"
 	for _, s := range sensors {
 		// search distance is cdb+1
 		sd := s.cbd + 1
-
-	Outer1:
 		for i := 0; i <= sd; i++ {
-			p := s.p.Add(common.NewPoint(i, -(sd - i)))
-			if beaconSet[p] || p.X() < 0 || p.X() > max || p.Y() < 0 || p.Y() > max {
-				continue
-			}
-			for _, s2 := range sensors {
-				// Check to see if it's closer than the closets
-				if s2.p.Sub(p).ManhattanDistance() <= s2.cbd {
-					continue Outer1
+		Offset:
+			for _, offset := range [4]common.Point{
+				common.NewPoint(i, -(sd - i)), // NE edge
+				common.NewPoint(sd-i, -i),     // SE edge
+				common.NewPoint(-i, sd-i),     // SW edge
+				common.NewPoint(-(sd - i), i), // WW edge
+			} {
+				p := s.p.Add(offset)
+				if beaconSet[p] || p.X() < 0 || p.X() > maxCoord || p.Y() < 0 || p.Y() > maxCoord {
+					continue
 				}
-			}
-			// must be it?
-			return p.X()*4000000 + p.Y()
-		}
-
-	Outer2:
-		for i := 0; i <= sd; i++ {
-			p := s.p.Add(common.NewPoint(sd-i, -i))
-			if beaconSet[p] || p.X() < 0 || p.X() > max || p.Y() < 0 || p.Y() > max {
-				continue
-			}
-			for _, s2 := range sensors {
-				// Check to see if it's closer than the closets
-				if s2.p.Sub(p).ManhattanDistance() <= s2.cbd {
-					continue Outer2
+				for _, s2 := range sensors {
+					if s2.invalidPoint(p) {
+						continue Offset
+					}
 				}
+				// This must be it
+				return p.X()*4000000 + p.Y()
 			}
-			// must be it?
-			return p.X()*4000000 + p.Y()
-		}
-
-	Outer3:
-		for i := 0; i <= sd; i++ {
-			p := s.p.Add(common.NewPoint(-i, sd-i))
-			if beaconSet[p] || p.X() < 0 || p.X() > max || p.Y() < 0 || p.Y() > max {
-				continue
-			}
-			for _, s2 := range sensors {
-				// Check to see if it's closer than the closets
-				if s2.p.Sub(p).ManhattanDistance() <= s2.cbd {
-					continue Outer3
-				}
-			}
-			// must be it?
-			return p.X()*4000000 + p.Y()
-		}
-
-	Outer4:
-		for i := 0; i <= sd; i++ {
-			p := s.p.Add(common.NewPoint(-(sd - i), i))
-			if beaconSet[p] || p.X() < 0 || p.X() > max || p.Y() < 0 || p.Y() > max {
-				continue
-			}
-			for _, s2 := range sensors {
-				// Check to see if it's closer than the closets
-				if s2.p.Sub(p).ManhattanDistance() <= s2.cbd {
-					continue Outer4
-				}
-			}
-			// must be it?
-			return p.X()*4000000 + p.Y()
 		}
 	}
-	return 0
-
+	panic("no dice")
 }
