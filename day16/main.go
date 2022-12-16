@@ -4,16 +4,15 @@ package main
 import (
 	"fmt"
 	"regexp"
-	"sort"
 	"strings"
 
 	"github.com/ghonzo/advent2022/common"
 	"github.com/oleiade/lane/v2"
 )
 
-// Day 16:
-// Part 1 answer:
-// Part 2 answer:
+// Day 16: Proboscidea Volcanium
+// Part 1 answer: 1986
+// Part 2 answer: 2464
 func main() {
 	fmt.Println("Advent of Code 2022, Day 16")
 	entries := common.ReadStringsFromFile("input.txt")
@@ -28,34 +27,26 @@ type valve struct {
 }
 
 type gamestate struct {
-	cur    *valve
+	cur *valve
+	// Only used in part 2
 	cur2   *valve
 	minute int
+	score  int
 	openAt map[*valve]int
 }
 
-func (gs *gamestate) score() int {
-	var score int
-	for k, v := range gs.openAt {
-		score += k.flowRate * (30 - v)
+func (gs *gamestate) totalFlow() int {
+	var sum int
+	for k := range gs.openAt {
+		sum += k.flowRate
 	}
-	return score
+	return sum
 }
 
-func (gs *gamestate) score2() int {
-	var score int
-	for k, v := range gs.openAt {
-		score += k.flowRate * (26 - v)
-	}
-	return score
-}
-
-func (gs *gamestate) isOpen() bool {
-	return gs.openAt[gs.cur] != 0
-}
-
+// Signature is the time and the position(s)
 func (gs *gamestate) signature() string {
 	var sb strings.Builder
+	sb.WriteByte(byte('A' + gs.minute))
 	if gs.cur2 != nil {
 		if gs.cur2.name < gs.cur.name {
 			sb.WriteString(gs.cur2.name)
@@ -67,75 +58,173 @@ func (gs *gamestate) signature() string {
 	} else {
 		sb.WriteString(gs.cur.name)
 	}
-	sb.WriteString(":")
-	var opened []string
-	for k := range gs.openAt {
-		opened = append(opened, k.name)
-	}
-	sort.Strings(opened)
-	sb.WriteString(strings.Join(opened, ""))
 	return sb.String()
+}
+
+func (gs *gamestate) open(v *valve) {
+	gs.openAt[v] = gs.minute
+}
+
+func (gs *gamestate) copy() *gamestate {
+	return &gamestate{gs.cur, gs.cur2, gs.minute, gs.score, gs.openAt}
+}
+
+// Also does a copy of the openAt map
+func (gs *gamestate) fullCopy() *gamestate {
+	ngs := gs.copy()
+	ngs.openAt = make(map[*valve]int)
+	for k, v := range gs.openAt {
+		ngs.openAt[k] = v
+	}
+	return ngs
 }
 
 func part1(entries []string) int {
 	valves := readInput(entries)
-	// Map to state signature to map of minute pointing to max score
-	maxState := make(map[string]map[int]int)
+	var numNonZeroValves int
+	for _, v := range valves {
+		if v.flowRate > 0 {
+			numNonZeroValves++
+		}
+	}
+	// Map of state signature to max score
+	maxState := make(map[string]int)
 	pq := lane.NewMaxPriorityQueue[*gamestate, int]()
-	pq.Push(&gamestate{valves["AA"], nil, 0, make(map[*valve]int)}, 0)
+	pq.Push(&gamestate{valves["AA"], nil, 1, 0, make(map[*valve]int)}, 0)
 	var maxScore int
-Outer:
 	for !pq.Empty() {
 		gs, _, _ := pq.Pop()
 		if gs.minute == 30 {
-			score := gs.score()
-			if score > maxScore {
-				maxScore = score
-				fmt.Println(maxScore)
+			if gs.score > maxScore {
+				maxScore = gs.score
 			}
 			continue
 		}
-		// Check to see if we are moving backwards
-		score := gs.score()
+		// Check to see if have already done better with this state
 		sig := gs.signature()
-		if scoreMap, ok := maxState[sig]; !ok {
-			maxState[sig] = make(map[int]int)
-			maxState[sig][gs.minute] = score
-		} else {
-			// see if there is a minute less than or equal that has a bigger score
-			for k, v := range scoreMap {
-				if k <= gs.minute && v >= score {
-					// dead path
-					continue Outer
-				}
-			}
-			scoreMap[gs.minute] = score
+		if ms, ok := maxState[sig]; ok && ms >= gs.score {
+			// Yep, this is a dead path
+			continue
 		}
+		maxState[sig] = gs.score
 		// Find all the possible moves
-		m := gs.minute + 1
-		// First for me
-
-		// Stay here
-		pq.Push(&gamestate{cur: gs.cur, minute: m, openAt: gs.openAt}, score)
-		// Can we open the current valve?
-		if !gs.isOpen() && gs.cur.flowRate > 0 {
-			pq.Push(gs.copyOpenAt(m), score)
+		// Degenerate case: all valves are open, so we just wait around
+		if len(gs.openAt) == numNonZeroValves {
+			gs.score += gs.totalFlow() * (30 - gs.minute)
+			gs.minute = 30
+			pq.Push(gs, gs.score)
 		}
-		// Otherwise go to all the connected
+		// Now let's find new paths
+		// Do we have a valve we can open here?
+		if gs.cur.flowRate > 0 && gs.openAt[gs.cur] == 0 {
+			// Let's open it
+			ngs := gs.fullCopy()
+			ngs.open(ngs.cur)
+			// And update the other state
+			ngs.minute++
+			ngs.score += ngs.totalFlow()
+			pq.Push(ngs, ngs.score)
+		}
+		// Let's go to all the connected
+		tf := gs.totalFlow()
 		for _, v := range gs.cur.connected {
-			pq.Push(&gamestate{cur: v, minute: m, openAt: gs.openAt}, score)
+			ngs := gs.copy()
+			ngs.cur = v
+			ngs.minute++
+			ngs.score += tf
+			pq.Push(ngs, ngs.score)
 		}
 	}
 	return maxScore
 }
 
-func (gs *gamestate) copyOpenAt(m int) *gamestate {
-	gs2 := &gamestate{cur: gs.cur, cur2: gs.cur2, minute: m, openAt: make(map[*valve]int)}
-	for k, v := range gs.openAt {
-		gs2.openAt[k] = v
+func part2(entries []string) int {
+	valves := readInput(entries)
+	var numNonZeroValves int
+	for _, v := range valves {
+		if v.flowRate > 0 {
+			numNonZeroValves++
+		}
 	}
-	gs2.openAt[gs.cur] = m
-	return gs2
+	// Map of state signature to max score
+	maxState := make(map[string]int)
+	pq := lane.NewMaxPriorityQueue[*gamestate, int]()
+	pq.Push(&gamestate{valves["AA"], valves["AA"], 1, 0, make(map[*valve]int)}, 0)
+	var maxScore int
+	for !pq.Empty() {
+		gs, _, _ := pq.Pop()
+		if gs.minute == 26 {
+			if gs.score > maxScore {
+				maxScore = gs.score
+			}
+			continue
+		}
+		// Check to see if have already done better with this state
+		sig := gs.signature()
+		if ms, ok := maxState[sig]; ok && ms >= gs.score {
+			// Yep, this is a dead path
+			continue
+		}
+		maxState[sig] = gs.score
+		// Find all the possible moves
+		// Degenerate case: all valves are open, so we just wait around
+		if len(gs.openAt) == numNonZeroValves {
+			gs.score += gs.totalFlow() * (26 - gs.minute)
+			gs.minute = 26
+			pq.Push(gs, gs.score)
+			continue
+		}
+		// Now let's find new paths
+		// Do we have a valve we can open here?
+		if gs.cur.flowRate > 0 && gs.openAt[gs.cur] == 0 {
+			// Let's open it
+			ngs := gs.fullCopy()
+			ngs.open(ngs.cur)
+			// What about the elephant? Can they open a valve too?
+			if ngs.cur2.flowRate > 0 && ngs.openAt[ngs.cur2] == 0 {
+				// Yep! Need to copy the copy
+				nngs := ngs.fullCopy()
+				nngs.open(nngs.cur2)
+				// And update the other state
+				nngs.minute++
+				nngs.score += nngs.totalFlow()
+				pq.Push(nngs, nngs.score)
+			}
+			// Or maybe the elephant travels somewhere else
+			tf := ngs.totalFlow()
+			for _, v := range ngs.cur2.connected {
+				nngs := ngs.copy()
+				nngs.cur2 = v
+				nngs.minute++
+				nngs.score += tf
+				pq.Push(nngs, nngs.score)
+			}
+		}
+		// What if we travel to a different room instead
+		for _, v := range gs.cur.connected {
+			// Can the elephant open a valve?
+			if gs.cur2.flowRate > 0 && gs.openAt[gs.cur2] == 0 {
+				// Yes, need a fully copy here
+				ngs := gs.fullCopy()
+				ngs.cur = v
+				ngs.open(ngs.cur2)
+				ngs.minute++
+				ngs.score += ngs.totalFlow()
+				pq.Push(ngs, ngs.score)
+			}
+			// And the elephant also moves
+			tf := gs.totalFlow()
+			for _, v2 := range gs.cur2.connected {
+				ngs := gs.copy()
+				ngs.cur = v
+				ngs.cur2 = v2
+				ngs.minute++
+				ngs.score += tf
+				pq.Push(ngs, ngs.score)
+			}
+		}
+	}
+	return maxScore
 }
 
 var lineRegexp = regexp.MustCompile(`Valve (..) has flow rate=(\d+); tunnels? leads? to valves? (.+)`)
@@ -155,77 +244,4 @@ func readInput(entries []string) map[string]*valve {
 		}
 	}
 	return valves
-}
-
-func part2(entries []string) int {
-	valves := readInput(entries)
-	// Map to state signature to map of minute pointing to max score
-	maxState := make(map[string]map[int]int)
-	pq := lane.NewMaxPriorityQueue[*gamestate, int]()
-	pq.Push(&gamestate{valves["AA"], valves["AA"], 0, make(map[*valve]int)}, 0)
-	var maxScore int
-Outer:
-	for !pq.Empty() {
-		gs, _, _ := pq.Pop()
-		score := gs.score2()
-		sig := gs.signature()
-		if gs.minute == 26 {
-			if score > maxScore {
-				maxScore = score
-				fmt.Println(maxScore, sig)
-			}
-			continue
-		}
-		// Check to see if we are moving backwards
-
-		if scoreMap, ok := maxState[sig]; !ok {
-			maxState[sig] = make(map[int]int)
-			maxState[sig][gs.minute] = score
-		} else {
-			// see if there is a minute less than or equal that has a bigger score
-			for k, v := range scoreMap {
-				if k <= gs.minute && v >= score {
-					// dead path
-					continue Outer
-				}
-			}
-			scoreMap[gs.minute] = score
-		}
-		// Find all the possible moves
-		m := gs.minute + 1
-		// Stay here
-		states := otherStates(gs)
-		// Can we open the current valve?
-		if !gs.isOpen() && gs.cur.flowRate > 0 {
-			states = append(states, otherStates(gs.copyOpenAt(m))...)
-		}
-		// Otherwise go to all the connected
-		for _, v := range gs.cur.connected {
-			states = append(states, otherStates(&gamestate{cur: v, cur2: gs.cur2, minute: m, openAt: gs.openAt})...)
-		}
-		for _, s := range states {
-			pq.Push(s, score)
-		}
-	}
-	return maxScore
-}
-
-func otherStates(gs *gamestate) []*gamestate {
-	var states []*gamestate
-	// stay here
-	states = append(states, gs)
-	// open
-	if gs.openAt[gs.cur2] == 0 && gs.cur2.flowRate > 0 {
-		gs2 := &gamestate{cur: gs.cur, cur2: gs.cur2, minute: gs.minute, openAt: make(map[*valve]int)}
-		for k, v := range gs.openAt {
-			gs2.openAt[k] = v
-		}
-		gs2.openAt[gs.cur2] = gs.minute
-		states = append(states, gs2)
-	}
-	// Otherwise go to all the connected
-	for _, v := range gs.cur2.connected {
-		states = append(states, &gamestate{cur: gs.cur, cur2: v, minute: gs.minute, openAt: gs.openAt})
-	}
-	return states
 }
