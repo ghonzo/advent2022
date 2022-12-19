@@ -57,6 +57,12 @@ type volume struct {
 	x, y, z common.MaxMin[int]
 }
 
+func (v *volume) contains(p point3) bool {
+	return p.x >= v.x.Min && p.x <= v.x.Max &&
+		p.y >= v.y.Min && p.y <= v.y.Max &&
+		p.z >= v.z.Min && p.z <= v.z.Max
+}
+
 func part2(entries []string) int {
 	point := readPoints(entries)
 	// Figure out the bounds of our space
@@ -107,65 +113,18 @@ func tryFill(start point3, space map[point3]bool, bounds *volume) map[point3]boo
 	for queue.Size() > 0 {
 		p, _ := queue.Dequeue()
 		// Look for adjacent spaces
-		adj := point3{p.x - 1, p.y, p.z}
-		if !space[adj] && !addedSpace[adj] {
-			// open space ...  are we out of bounds though?
-			if adj.x < bounds.x.Min {
-				// We escaped so none of this matters
-				return make(map[point3]bool)
+		for _, adj := range []point3{{p.x - 1, p.y, p.z}, {p.x + 1, p.y, p.z},
+			{p.x, p.y - 1, p.z}, {p.x, p.y + 1, p.z},
+			{p.x, p.y, p.z - 1}, {p.x, p.y, p.z + 1}} {
+			if !space[adj] && !addedSpace[adj] {
+				// open space ...  are we out of bounds though?
+				if !bounds.contains(adj) {
+					// We escaped so none of this matters
+					return make(map[point3]bool)
+				}
+				addedSpace[adj] = true
+				queue.Enqueue(adj)
 			}
-			addedSpace[adj] = true
-			queue.Enqueue(adj)
-		}
-		adj = point3{p.x + 1, p.y, p.z}
-		if !space[adj] && !addedSpace[adj] {
-			// open space ...  are we out of bounds though?
-			if adj.x > bounds.x.Max {
-				// We escaped so none of this matters
-				return make(map[point3]bool)
-			}
-			addedSpace[adj] = true
-			queue.Enqueue(adj)
-		}
-		adj = point3{p.x, p.y - 1, p.z}
-		if !space[adj] && !addedSpace[adj] {
-			// open space ...  are we out of bounds though?
-			if adj.y < bounds.y.Min {
-				// We escaped so none of this matters
-				return make(map[point3]bool)
-			}
-			addedSpace[adj] = true
-			queue.Enqueue(adj)
-		}
-		adj = point3{p.x, p.y + 1, p.z}
-		if !space[adj] && !addedSpace[adj] {
-			// open space ...  are we out of bounds though?
-			if adj.y > bounds.y.Max {
-				// We escaped so none of this matters
-				return make(map[point3]bool)
-			}
-			addedSpace[adj] = true
-			queue.Enqueue(adj)
-		}
-		adj = point3{p.x, p.y, p.z - 1}
-		if !space[adj] && !addedSpace[adj] {
-			// open space ...  are we out of bounds though?
-			if adj.z < bounds.z.Min {
-				// We escaped so none of this matters
-				return make(map[point3]bool)
-			}
-			addedSpace[adj] = true
-			queue.Enqueue(adj)
-		}
-		adj = point3{p.x, p.y, p.z + 1}
-		if !space[adj] && !addedSpace[adj] {
-			// open space ...  are we out of bounds though?
-			if adj.z > bounds.z.Max {
-				// We escaped so none of this matters
-				return make(map[point3]bool)
-			}
-			addedSpace[adj] = true
-			queue.Enqueue(adj)
 		}
 	}
 	// Must be a hole. Return all the spaces we found
