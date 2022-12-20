@@ -14,3 +14,6 @@ require (
 
 // Priorirty queue (Used in day 12)
 require github.com/oleiade/lane/v2 v2.0.0
+
+// Deque (Used in day 20)
+require github.com/gammazero/deque v0.2.1

@@ -1,3 +1,5 @@
+github.com/gammazero/deque v0.2.1 h1:qSdsbG6pgp6nL7A0+K/B7s12mcCY/5l5SIUpMOl+dC0=
+github.com/gammazero/deque v0.2.1/go.mod h1:LFroj8x4cMYCukHJDbxFCkT+r9AndaJnFMuZDV34tuU=
 github.com/oleiade/lane/v2 v2.0.0 h1:XW/ex/Inr+bPkLd3O240xrFOhUkTd4Wy176+Gv0E3Qw=
 github.com/oleiade/lane/v2 v2.0.0/go.mod h1:i5FBPFAYSWCgLh58UkUGCChjcCzef/MI7PlQm2TKCeg=
 github.com/tidwall/gjson v1.14.4 h1:uo0p8EbA09J7RQaflQ1aBRffTR7xedD2bcIVSYxLnkM=
