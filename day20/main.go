@@ -8,9 +8,9 @@ import (
 	"github.com/ghonzo/advent2022/common"
 )
 
-// Day 20:
-// Part 1 answer:
-// Part 2 answer:
+// Day 20: Grove Positioning System
+// Part 1 answer: 10707
+// Part 2 answer: 2488332343098
 func main() {
 	fmt.Println("Advent of Code 2022, Day 20")
 	entries := common.ReadStringsFromFile("input.txt")
@@ -19,6 +19,7 @@ func main() {
 }
 
 func part1(entries []string) int {
+	// Maintain two deques -- q has the input, while iq contains the indexes
 	var q, iq deque.Deque[int]
 	for i, s := range entries {
 		q.PushBack(common.Atoi(s))
@@ -34,6 +35,7 @@ func part1(entries []string) int {
 		iq.Rotate(a)
 		q.PushFront(a)
 		iq.PushFront(b)
+		// If we wanted to maintain the head, do this, but we don't care
 		// q.Rotate(-a - index)
 		// iq.Rotate(-a - index)
 	}
@@ -65,8 +67,6 @@ func part2(entries []string) int {
 			iq.Rotate(a)
 			q.PushFront(a)
 			iq.PushFront(b)
-			// q.Rotate(-a - index)
-			// iq.Rotate(-a - index)
 		}
 	}
 	// Find the zero
