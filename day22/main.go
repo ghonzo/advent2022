@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"unicode"
 
 	"github.com/ghonzo/advent2022/common"
 )
@@ -20,40 +19,49 @@ func main() {
 	fmt.Printf("Part 2: %d\n", part2(entries))
 }
 
-var pwRegexp = regexp.MustCompile(`\d+[RLX]`)
+var pwRegexp = regexp.MustCompile(`(\d+)([RL])?`)
 
+// Generalized, works for any input
 func part1(entries []string) int {
 	g := common.ArraysGridFromLines(padToLongest(entries[:len(entries)-2]))
 	pw := entries[len(entries)-1]
-	if unicode.IsDigit(rune(pw[len(pw)-1])) {
-		// Append an "X" which means don't change facing
-		pw = pw + "X"
-	}
 	facing := common.R
 	p := findFirst(g, common.NewPoint(0, 0), facing)
-	for _, movement := range pwRegexp.FindAllString(pw, -1) {
-		p = move(g, p, facing, common.Atoi(movement[:len(movement)-1]))
-		switch movement[len(movement)-1] {
-		case 'R':
+	for _, movement := range pwRegexp.FindAllStringSubmatch(pw, -1) {
+		// movement[0] is whole instruction, movement[1] is distance, movement[2] is R, L, or empty
+		p = move(g, p, facing, common.Atoi(movement[1]))
+		switch movement[2] {
+		case "R":
 			facing = facing.Right()
-		case 'L':
+		case "L":
 			facing = facing.Left()
-		case 'X':
-			// last instruction might not have a direction
+		default:
+			// last instruction might not have a turn
 		}
 	}
-	score := 1000*(p.Y()+1) + 4*(p.X()+1)
-	switch facing {
-	case common.R:
-		score += 0
-	case common.D:
-		score += 1
-	case common.L:
-		score += 2
-	case common.U:
-		score += 3
+	return score(p, facing)
+}
+
+// THIS ONLY WORKS FOR MY INPUT. Doesn't work with test input, and who
+// knows about other puzzle inputs.
+func part2(entries []string) int {
+	g := common.ArraysGridFromLines(padToLongest(entries[:len(entries)-2]))
+	pw := entries[len(entries)-1]
+	facing := common.R
+	p := findFirst(g, common.NewPoint(0, 0), facing)
+	for _, movement := range pwRegexp.FindAllStringSubmatch(pw, -1) {
+		// movement[0] is whole instruction, movement[1] is distance, movement[2] is R, L, or empty
+		p, facing = move3d(g, p, facing, common.Atoi(movement[1]))
+		switch movement[2] {
+		case "R":
+			facing = facing.Right()
+		case "L":
+			facing = facing.Left()
+		default:
+			// last instruction might not have a turn
+		}
 	}
-	return score
+	return score(p, facing)
 }
 
 func padToLongest(lines []string) []string {
@@ -70,6 +78,7 @@ func padToLongest(lines []string) []string {
 	return lines
 }
 
+// Starting at the given point, walk in the given direction until you hit a non-blank space
 func findFirst(g common.Grid, startingPoint common.Point, dir common.Point) common.Point {
 	for p := startingPoint; ; p = p.Add(dir) {
 		if g.Get(p) != ' ' {
@@ -111,26 +120,7 @@ func move(g common.Grid, startingPoint common.Point, dir common.Point, dist int)
 	return p
 }
 
-func part2(entries []string) int {
-	g := common.ArraysGridFromLines(padToLongest(entries[:len(entries)-2]))
-	pw := entries[len(entries)-1]
-	if unicode.IsDigit(rune(pw[len(pw)-1])) {
-		// Append an "X" which means don't change facing
-		pw = pw + "X"
-	}
-	facing := common.R
-	p := findFirst(g, common.NewPoint(0, 0), facing)
-	for _, movement := range pwRegexp.FindAllString(pw, -1) {
-		p, facing = move3d(g, p, facing, common.Atoi(movement[:len(movement)-1]))
-		switch movement[len(movement)-1] {
-		case 'R':
-			facing = facing.Right()
-		case 'L':
-			facing = facing.Left()
-		case 'X':
-			// last instruction might not have a direction
-		}
-	}
+func score(p common.Point, facing common.Point) int {
 	score := 1000*(p.Y()+1) + 4*(p.X()+1)
 	switch facing {
 	case common.R:
@@ -145,6 +135,23 @@ func part2(entries []string) int {
 	return score
 }
 
+/*
+	THIS IS SPECIFIC TO MY INPUT. My cube mapping looks like this:
+
+	  111222
+	  111222
+	  111222
+	  333
+	  333
+	  333
+
+555444
+555444
+555444
+666
+666
+666
+*/
 func face(p common.Point) int {
 	switch {
 	case p.X() >= 50 && p.X() < 100 && p.Y() < 50:
@@ -164,9 +171,9 @@ func face(p common.Point) int {
 }
 
 // New Point, New Facing
-func move3d(g common.Grid, startingPoint common.Point, dir common.Point, dist int) (common.Point, common.Point) {
-	p := startingPoint
-	facing := dir
+func move3d(g common.Grid, startingPoint common.Point, dir common.Point, dist int) (p common.Point, facing common.Point) {
+	p = startingPoint
+	facing = dir
 	for i := 0; i < dist; i++ {
 		// try to move a step
 		np := p.Add(facing)
@@ -236,11 +243,11 @@ func move3d(g common.Grid, startingPoint common.Point, dir common.Point, dist in
 		}
 		// If it's a wall, we're done, return the old point and facing
 		if v == '#' {
-			return p, facing
+			return
 		}
 		// Successful move
 		p = np
 		facing = nf
 	}
-	return p, facing
+	return
 }
