@@ -138,19 +138,18 @@ func score(p common.Point, facing common.Point) int {
 /*
 	THIS IS SPECIFIC TO MY INPUT. My cube mapping looks like this:
 
-	  111222
-	  111222
-	  111222
-	  333
-	  333
-	  333
-
-555444
-555444
-555444
-666
-666
-666
+...111222
+...111222
+...111222
+...333...
+...333...
+...333...
+555444...
+555444...
+555444...
+666......
+666......
+666......
 */
 func face(p common.Point) int {
 	switch {
