@@ -26,3 +26,23 @@ func Test_part1(t *testing.T) {
 		})
 	}
 }
+
+func Test_part2(t *testing.T) {
+	type args struct {
+		entries []string
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{"example", args{common.ReadStringsFromFile("testdata/example.txt")}, 301},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := part2(tt.args.entries); got != tt.want {
+				t.Errorf("part2() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -3,29 +3,24 @@ package main
 
 import (
 	"fmt"
-	"strconv"
-	"strings"
 	"unicode"
 
 	"github.com/ghonzo/advent2022/common"
 )
 
-// Day 21:
+// Day 21: Monkey Math
 // Part 1 answer: 331319379445180
-// Part 2 answer: 199628
+// Part 2 answer: 3715799488132
 func main() {
 	fmt.Println("Advent of Code 2022, Day 21")
 	entries := common.ReadStringsFromFile("input.txt")
 	fmt.Printf("Part 1: %d\n", part1(entries))
-	fmt.Printf("Part 2: %s\n", part2(entries))
+	fmt.Printf("Part 2: %d\n", part2(entries))
 }
 
 type monkey struct {
-	name string
-	// use in part 1
-	value int
-	// use in part 2
-	valueExpr   string
+	name        string
+	value       int
 	hasValue    bool
 	left, right string
 	op          byte
@@ -39,17 +34,13 @@ func part1(entries []string) int {
 	return findValue(monkeyMap, "root")
 }
 
-func part2(entries []string) string {
+func part2(entries []string) int {
 	monkeyMap := make(map[string]*monkey)
 	for _, m := range readMonkeys(entries) {
-		if m.hasValue {
-			m.valueExpr = strconv.Itoa(m.value)
-		}
 		monkeyMap[m.name] = m
 	}
-	monkeyMap["root"].op = '='
-	monkeyMap["humn"].valueExpr = "x"
-	return findValue2(monkeyMap, "root")
+	rewriteMonkeyMap(monkeyMap, "humn")
+	return findValue(monkeyMap, "humn")
 }
 
 func readMonkeys(entries []string) []*monkey {
@@ -90,45 +81,58 @@ func findValue(monkeyMap map[string]*monkey, name string) int {
 	return m.value
 }
 
-func findValue2(monkeyMap map[string]*monkey, name string) string {
-	m := monkeyMap[name]
-	if m.hasValue {
-		return m.valueExpr
+func rewriteMonkeyMap(monkeyMap map[string]*monkey, name string) {
+	// Look for any monkeys that have "name" as left or right
+	m := &monkey{name: name}
+	for k, v := range monkeyMap {
+		if v.left == name {
+			if k == "root" {
+				m.value = findValue(monkeyMap, v.right)
+				m.hasValue = true
+				break
+			}
+			m.left = v.name
+			m.right = v.right
+			switch v.op {
+			case '+':
+				m.op = '-'
+			case '-':
+				m.op = '+'
+			case '*':
+				m.op = '/'
+			case '/':
+				m.op = '*'
+			}
+			rewriteMonkeyMap(monkeyMap, k)
+			break
+		}
+		if v.right == name {
+			if k == "root" {
+				m.value = findValue(monkeyMap, v.left)
+				m.hasValue = true
+				break
+			}
+			switch v.op {
+			case '+':
+				m.left = v.name
+				m.right = v.left
+				m.op = '-'
+			case '-':
+				m.left = v.left
+				m.right = v.name
+				m.op = '-'
+			case '*':
+				m.left = v.name
+				m.right = v.left
+				m.op = '/'
+			case '/':
+				m.left = v.left
+				m.right = v.name
+				m.op = '/'
+			}
+			rewriteMonkeyMap(monkeyMap, k)
+			break
+		}
 	}
-	lExpr := findValue2(monkeyMap, m.left)
-	lv, err1 := strconv.Atoi(lExpr)
-	rExpr := findValue2(monkeyMap, m.right)
-	rv, err2 := strconv.Atoi(rExpr)
-	if err1 == nil && err2 == nil {
-		switch m.op {
-		case '+':
-			m.valueExpr = strconv.Itoa(lv + rv)
-		case '-':
-			m.valueExpr = strconv.Itoa(lv - rv)
-		case '*':
-			m.valueExpr = strconv.Itoa(lv * rv)
-		case '/':
-			m.valueExpr = strconv.Itoa(lv / rv)
-		}
-	} else {
-		var sb strings.Builder
-		if err1 != nil {
-			sb.WriteByte('(')
-			sb.WriteString(lExpr)
-			sb.WriteByte(')')
-		} else {
-			sb.WriteString(lExpr)
-		}
-		sb.WriteByte(m.op)
-		if err2 != nil {
-			sb.WriteByte('(')
-			sb.WriteString(rExpr)
-			sb.WriteByte(')')
-		} else {
-			sb.WriteString(rExpr)
-		}
-		m.valueExpr = sb.String()
-	}
-	m.hasValue = true
-	return m.valueExpr
+	monkeyMap[name] = m
 }
