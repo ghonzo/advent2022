@@ -9,7 +9,7 @@ import (
 
 // Grid represents a mutable 2D rectangle with a value at each integer coordinate
 type Grid interface {
-	Size() Point
+	Bounds() Rect
 	Get(coord Point) byte
 	CheckedGet(coord Point) (v byte, ok bool)
 	Set(coord Point, b byte)
@@ -20,9 +20,9 @@ type Grid interface {
 // ArraysGrid is a Grid that has an underlying representation of [][]byte
 type ArraysGrid [][]byte
 
-// Size returns a Point that represents the dimensions of the Grid
-func (g *ArraysGrid) Size() Point {
-	return Point{len((*g)[0]), len(*g)}
+// Bounds returns a Rect that represents the dimensions of the Grid
+func (g *ArraysGrid) Bounds() Rect {
+	return NewRect(0, 0, len((*g)[0]), len(*g))
 }
 
 // Get returns the value at the given coordinate
@@ -38,8 +38,7 @@ func (g *ArraysGrid) Get(coord Point) byte {
 // If the coordinate is present, it will return the value and an ok value of true. If it is not,
 // it will return 0 and an ok value of false.
 func (g *ArraysGrid) CheckedGet(coord Point) (byte, bool) {
-	size := g.Size()
-	if coord.x < 0 || coord.x >= size.x || coord.y < 0 || coord.y >= size.y {
+	if !g.Bounds().Contains(coord) {
 		return 0, false
 	}
 	return g.Get(coord), true
@@ -54,10 +53,10 @@ func (g *ArraysGrid) Set(coord Point, b byte) {
 
 // Clone returns a copy of the Grid, leaving the original untouched.
 func (g *ArraysGrid) Clone() Grid {
-	size := g.Size()
-	clone := make(ArraysGrid, size.y)
+	r := g.Bounds()
+	clone := make(ArraysGrid, r.Height())
 	for row := range *g {
-		clone[row] = make([]byte, size.x)
+		clone[row] = make([]byte, r.Width())
 		copy(clone[row], (*g)[row])
 	}
 	return &clone
@@ -67,9 +66,9 @@ func (g *ArraysGrid) Clone() Grid {
 func (g *ArraysGrid) AllPoints() <-chan Point {
 	ch := make(chan Point)
 	go func() {
-		size := g.Size()
-		for y := 0; y < size.y; y++ {
-			for x := 0; x < size.x; x++ {
+		r := g.Bounds()
+		for y := 0; y < r.Height(); y++ {
+			for x := 0; x < r.Width(); x++ {
 				ch <- Point{x, y}
 			}
 		}
@@ -133,15 +132,15 @@ func NewSparseGrid() SparseGrid {
 	return make(SparseGrid)
 }
 
-// This returns a point that has the maxX and maxY, or 0,0 if empty
-func (g SparseGrid) Size() Point {
+// Bounds returns a Rect that represents the maximum containing rectangle of the Grid
+func (g SparseGrid) Bounds() Rect {
 	mmX := new(MaxMin[int])
 	mmY := new(MaxMin[int])
 	for p := range g.AllPoints() {
 		mmX.Accept(p.X())
 		mmY.Accept(p.Y())
 	}
-	return Point{mmX.Max, mmY.Max}
+	return Rect{Point{mmX.Min, mmY.Min}, Point{mmX.Max, mmY.Max}}
 }
 
 // Get returns the value at the given coordinate
@@ -189,19 +188,14 @@ func (g SparseGrid) Clone() Grid {
 // RenderGrid will render the contents of the grid as a multiline string. If you would like a character for a "missing point"
 // (which is only possible for a SparseGrid), then specify a missing character. Otherwise we will use a space.
 func RenderGrid(g Grid, missing ...byte) string {
-	xMM := new(MaxMin[int])
-	yMM := new(MaxMin[int])
-	for p := range g.AllPoints() {
-		xMM.Accept(p.X())
-		yMM.Accept(p.Y())
-	}
+	r := g.Bounds()
 	var sb strings.Builder
 	blank := byte(' ')
 	if len(missing) > 0 {
 		blank = missing[0]
 	}
-	for y := yMM.Min; y <= yMM.Max; y++ {
-		for x := xMM.Min; x <= xMM.Max; x++ {
+	for y := r.minPoint.y; y <= r.maxPoint.y; y++ {
+		for x := r.minPoint.x; x <= r.maxPoint.y; x++ {
 			v, ok := g.CheckedGet(NewPoint(x, y))
 			if !ok {
 				v = blank

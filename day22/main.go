@@ -101,12 +101,12 @@ func move(g common.Grid, startingPoint common.Point, dir common.Point, dist int)
 			case common.R:
 				np = findFirst(g, common.NewPoint(0, np.Y()), dir)
 			case common.L:
-				np = findFirst(g, common.NewPoint(g.Size().X()-1, np.Y()), dir)
+				np = findFirst(g, common.NewPoint(g.Bounds().Width()-1, np.Y()), dir)
 			case common.D:
 				// Remember, down is *positive*
 				np = findFirst(g, common.NewPoint(np.X(), 0), dir)
 			case common.U:
-				np = findFirst(g, common.NewPoint(np.X(), g.Size().Y()-1), dir)
+				np = findFirst(g, common.NewPoint(np.X(), g.Bounds().Height()-1), dir)
 			}
 			v = g.Get(np)
 		}

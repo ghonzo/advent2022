@@ -30,9 +30,9 @@ type blizzard struct {
 
 func part1(entries []string) int {
 	g := common.ArraysGridFromLines(entries)
-	dim := g.Size()
+	dim := g.Bounds()
 	start := common.NewPoint(1, 0)
-	end := common.NewPoint(dim.X()-2, dim.Y()-1)
+	end := common.NewPoint(dim.Width()-2, dim.Height()-1)
 	blizzards := extractBlizzards(g)
 	return findFastestPath(start, end, 0, blizzards, dim)
 }
@@ -61,9 +61,9 @@ func extractBlizzards(g common.Grid) []blizzard {
 
 func part2(entries []string) int {
 	g := common.ArraysGridFromLines(entries)
-	dim := g.Size()
+	dim := g.Bounds()
 	start := common.NewPoint(1, 0)
-	end := common.NewPoint(dim.X()-2, dim.Y()-1)
+	end := common.NewPoint(dim.Width()-2, dim.Height()-1)
 	blizzards := extractBlizzards(g)
 	firstPartTime := findFastestPath(start, end, 0, blizzards, dim)
 	secondPartTime := findFastestPath(end, start, firstPartTime, blizzards, dim)
@@ -71,7 +71,7 @@ func part2(entries []string) int {
 	return thirdPartTime
 }
 
-func findFastestPath(start, end common.Point, startingMinute int, blizzards []blizzard, dim common.Point) int {
+func findFastestPath(start, end common.Point, startingMinute int, blizzards []blizzard, dim common.Rect) int {
 	pq := lane.NewMinPriorityQueue[expState, int]()
 	alreadyVisited := make(map[int]common.Grid)
 	pq.Push(expState{start, startingMinute}, score(start, end))
@@ -82,7 +82,7 @@ func findFastestPath(start, end common.Point, startingMinute int, blizzards []bl
 		if state.minute >= minMinute {
 			continue
 		}
-		modMinute := state.minute % ((dim.X() - 2) * (dim.Y() - 2))
+		modMinute := state.minute % ((dim.Width() - 2) * (dim.Height() - 2))
 		var visitedGrid common.Grid
 		var ok bool
 		if visitedGrid, ok = alreadyVisited[modMinute]; !ok {
@@ -101,7 +101,7 @@ func findFastestPath(start, end common.Point, startingMinute int, blizzards []bl
 					minMinute = minute
 				}
 			}
-			if p.X() >= 1 && p.X() < dim.X()-1 && p.Y() >= 1 && p.Y() < dim.Y()-1 && blizzardGrid.Get(p) == 0 {
+			if p.X() >= 1 && p.X() < dim.Width()-1 && p.Y() >= 1 && p.Y() < dim.Height()-1 && blizzardGrid.Get(p) == 0 {
 				// Possible move
 				pq.Push(expState{p, minute}, score(p, end))
 			}
@@ -117,8 +117,8 @@ func findFastestPath(start, end common.Point, startingMinute int, blizzards []bl
 
 var blizzardsMemo = make(map[int]common.SparseGrid)
 
-func findBlizzards(bList []blizzard, minute int, dim common.Point) common.SparseGrid {
-	var modMinute = minute % ((dim.X() - 2) * (dim.Y() - 2))
+func findBlizzards(bList []blizzard, minute int, dim common.Rect) common.SparseGrid {
+	var modMinute = minute % ((dim.Width() - 2) * (dim.Height() - 2))
 	var g common.SparseGrid
 	var ok bool
 	if g, ok = blizzardsMemo[modMinute]; !ok {
@@ -131,9 +131,9 @@ func findBlizzards(bList []blizzard, minute int, dim common.Point) common.Sparse
 	return g
 }
 
-func computeBlizzardPos(b blizzard, minute int, dim common.Point) common.Point {
-	xd := dim.X() - 2
-	yd := dim.Y() - 2
+func computeBlizzardPos(b blizzard, minute int, dim common.Rect) common.Point {
+	xd := dim.Width() - 2
+	yd := dim.Height() - 2
 	// First the translate to get to a (0,0) origin
 	p := b.pos.Add(common.NW).Add(b.dir.Times(minute))
 	px := p.X() % xd
