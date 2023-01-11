@@ -140,7 +140,7 @@ func (g SparseGrid) Bounds() Rect {
 		mmX.Accept(p.X())
 		mmY.Accept(p.Y())
 	}
-	return Rect{Point{mmX.Min, mmY.Min}, Point{mmX.Max, mmY.Max}}
+	return NewRectByPoints(Point{mmX.Min, mmY.Min}, Point{mmX.Max, mmY.Max})
 }
 
 // Get returns the value at the given coordinate
@@ -194,8 +194,9 @@ func RenderGrid(g Grid, missing ...byte) string {
 	if len(missing) > 0 {
 		blank = missing[0]
 	}
-	for y := r.minPoint.y; y <= r.maxPoint.y; y++ {
-		for x := r.minPoint.x; x <= r.maxPoint.y; x++ {
+	minPoint, maxPoint := r.Location(), r.MaxPoint()
+	for y := minPoint.y; y <= maxPoint.y; y++ {
+		for x := minPoint.x; x <= maxPoint.y; x++ {
 			v, ok := g.CheckedGet(NewPoint(x, y))
 			if !ok {
 				v = blank
