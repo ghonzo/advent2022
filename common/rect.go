@@ -17,7 +17,7 @@ func NewRectByPoints(p1, p2 Point) Rect {
 	// Don't assume positioning of the points
 	minx := Min(p1.x, p2.x)
 	miny := Min(p1.y, p2.y)
-	return Rect{Point{minx, miny}, Abs(p2.x - p1.x), Abs(p2.y - p1.y)}
+	return Rect{Point{minx, miny}, Abs(p2.x-p1.x) + 1, Abs(p2.y-p1.y) + 1}
 }
 
 // Width returns the maxPoint.x - minPoint.x
@@ -37,7 +37,7 @@ func (r Rect) Location() Point {
 
 // MaxPoint is the point of the bottom-right corner
 func (r Rect) MaxPoint() Point {
-	return r.minPoint.Add(Point{r.w, r.h})
+	return r.minPoint.Add(Point{r.w - 1, r.h - 1})
 }
 
 // Contains returns true if the given point is within this rectangle
