@@ -40,7 +40,7 @@ func (r Rect) MaxPoint() Point {
 	return r.minPoint.Add(Point{r.w, r.h})
 }
 
-// Contains returns true if the given point is within this rectangle, inclusively
+// Contains returns true if the given point is within this rectangle
 func (r Rect) Contains(p Point) bool {
-	return p.x >= r.minPoint.x && p.x <= r.minPoint.x+r.w && p.y >= r.minPoint.y && p.y <= r.minPoint.y+r.h
+	return p.x >= r.minPoint.x && p.x < r.minPoint.x+r.w && p.y >= r.minPoint.y && p.y < r.minPoint.y+r.h
 }
