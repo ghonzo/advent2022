@@ -30,7 +30,7 @@ func part1(entries []string) int {
 func part2(entries []string) int {
 	g := readGrid(entries)
 	var units int
-	floorY := g.Bounds().Height() + 2
+	floorY := g.Size().Y() + 2
 	for produceSand2(g, floorY) {
 		units++
 	}
@@ -69,7 +69,7 @@ var dirs = []common.Point{common.D, common.DL, common.DR}
 var seedPoint = common.NewPoint(500, 0)
 
 func produceSand(g common.Grid) bool {
-	maxY := g.Bounds().Height()
+	maxY := g.Size().Y()
 Down:
 	for p := seedPoint; p.Y() < maxY; {
 		for _, d := range dirs {
