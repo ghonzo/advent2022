@@ -73,13 +73,13 @@ func readBlueprints(entries []string) []*blueprint {
 		bp := new(blueprint)
 		bp.robotCosts[ore][ore] = common.Atoi(group[2])
 		bp.robotCosts[clay][ore] = common.Atoi(group[3])
-		bp.maxRobots[ore] = common.Max(bp.robotCosts[ore][ore], bp.robotCosts[clay][ore])
+		bp.maxRobots[ore] = max(bp.robotCosts[ore][ore], bp.robotCosts[clay][ore])
 		bp.robotCosts[obsidian][ore] = common.Atoi(group[4])
-		bp.maxRobots[ore] = common.Max(bp.maxRobots[ore], bp.robotCosts[obsidian][ore])
+		bp.maxRobots[ore] = max(bp.maxRobots[ore], bp.robotCosts[obsidian][ore])
 		bp.robotCosts[obsidian][clay] = common.Atoi(group[5])
 		bp.maxRobots[clay] = bp.robotCosts[obsidian][clay]
 		bp.robotCosts[geode][ore] = common.Atoi(group[6])
-		bp.maxRobots[ore] = common.Max(bp.maxRobots[ore], bp.robotCosts[geode][ore])
+		bp.maxRobots[ore] = max(bp.maxRobots[ore], bp.robotCosts[geode][ore])
 		bp.robotCosts[geode][obsidian] = common.Atoi(group[7])
 		bp.maxRobots[obsidian] = bp.robotCosts[geode][obsidian]
 		bp.maxRobots[geode] = math.MaxInt
@@ -110,7 +110,7 @@ func calcMaxGeodes(bp *blueprint, timeLimit int) int {
 						break
 					}
 					// Otherwise, this is how long it will take
-					timeToBuild = common.Max(timeToBuild, (costToBuild[resourceType]-curState.inventory[resourceType]+curState.robots[resourceType]-1)/curState.robots[resourceType])
+					timeToBuild = max(timeToBuild, (costToBuild[resourceType]-curState.inventory[resourceType]+curState.robots[resourceType]-1)/curState.robots[resourceType])
 				}
 			}
 			nextState := curState
@@ -133,7 +133,7 @@ func calcMaxGeodes(bp *blueprint, timeLimit int) int {
 			}
 			pq.Push(nextState, nextState.inventory[geode]+1)
 		}
-		maxGeodes = common.Max(maxGeodes, curState.inventory[geode]+curState.robots[geode]*(timeLimit-curState.time))
+		maxGeodes = max(maxGeodes, curState.inventory[geode]+curState.robots[geode]*(timeLimit-curState.time))
 	}
 	return maxGeodes
 }

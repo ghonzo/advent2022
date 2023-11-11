@@ -67,7 +67,7 @@ func part2(entries []string) int {
 func padToLongest(lines []string) []string {
 	longest := 0
 	for _, s := range lines {
-		longest = common.Max(longest, len(s))
+		longest = max(longest, len(s))
 	}
 	for i, s := range lines {
 		ls := len(s)

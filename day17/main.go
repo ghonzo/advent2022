@@ -62,7 +62,7 @@ func part1(entries []string) int {
 			// Now move down one
 			npos = pos.Add(common.U)
 			if !valid(r, npos, g) {
-				ymax = common.Max(ymax, addToGrid(r, pos, g))
+				ymax = max(ymax, addToGrid(r, pos, g))
 				break
 			}
 			pos = npos
@@ -129,7 +129,7 @@ func part2(entries []string) int {
 			// Now move down one
 			npos = pos.Add(common.U)
 			if !valid(r, npos, g) {
-				ymax = common.Max(ymax, addToGrid(r, pos, g))
+				ymax = max(ymax, addToGrid(r, pos, g))
 				break
 			}
 			pos = npos
