@@ -1,6 +1,7 @@
 package common
 
 import (
+	"slices"
 	"strconv"
 
 	"golang.org/x/exp/constraints"
@@ -34,10 +35,6 @@ func Sgn[T constraints.Signed | constraints.Float](a T) int {
 // Reverse takes a string and returns the reverse
 func Reverse(s string) string {
 	rns := []rune(s) // convert to rune
-	for i, j := 0, len(rns)-1; i < j; i, j = i+1, j-1 {
-		// swap the letters of the string,
-		// like first with last and so on.
-		rns[i], rns[j] = rns[j], rns[i]
-	}
+	slices.Reverse(rns)
 	return string(rns)
 }

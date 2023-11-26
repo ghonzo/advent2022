@@ -2,8 +2,9 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
-	"sort"
+	"slices"
 
 	"github.com/ghonzo/advent2022/common"
 )
@@ -46,6 +47,9 @@ func part2(entries []string) int {
 			accum += common.Atoi(s)
 		}
 	}
-	sort.Sort(sort.Reverse(sort.IntSlice(elves)))
+	//sort.Sort(sort.Reverse(sort.IntSlice(elves)))
+	slices.SortFunc(elves, func(a, b int) int {
+		return -cmp.Compare(a, b)
+	})
 	return elves[0] + elves[1] + elves[2]
 }
